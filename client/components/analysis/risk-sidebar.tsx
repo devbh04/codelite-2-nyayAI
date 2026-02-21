@@ -211,7 +211,7 @@ export function RiskSidebar() {
 
             {/* Executive Summary Dialog */}
             {summaryOpen && riskData?.executive_summary && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setSummaryOpen(false)}>
+                <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setSummaryOpen(false)}>
                     <div
                         className="bg-background border border-border rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[80vh] flex flex-col animate-in zoom-in-95 duration-200"
                         onClick={(e) => e.stopPropagation()}
