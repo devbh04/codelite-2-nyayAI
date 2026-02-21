@@ -163,14 +163,14 @@ export default function AnalysisPage() {
                             </div>
                         )}
                         {view === "preview" && (
-                            <div className="p-10 lg:p-12 break-words">
+                            <div className="p-10 lg:p-12 wrap-break-word">
                                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={mdComponents}>
                                     {cleanMarkdown}
                                 </ReactMarkdown>
                             </div>
                         )}
                         {view === "md" && (
-                            <pre className="overflow-x-auto whitespace-pre-wrap break-words p-10 text-sm font-mono text-foreground/80 leading-relaxed">
+                            <pre className="overflow-x-auto whitespace-pre-wrap wrap-break-word p-10 text-sm font-mono text-foreground/80 leading-relaxed">
                                 {activeMd}
                             </pre>
                         )}

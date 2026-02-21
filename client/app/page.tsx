@@ -280,7 +280,7 @@ export default function LandingPage() {
                             </p>
                         </div>
                         <div className="grid gap-12 md:grid-cols-3 relative">
-                            <div className="absolute top-[2.5rem] left-0 right-0 hidden md:block border-t border-dashed border-border w-full z-0"></div>
+                            <div className="absolute top-10 left-0 right-0 hidden md:block border-t border-dashed border-border w-full z-0"></div>
                             {[
                                 { step: "1", title: "Upload Contract", desc: "Securely drag and drop your PDF file. We support English and Hindi legal documents." },
                                 { step: "2", title: "AI Analysis", desc: "Our agents parse, interpret, and risk-score every clause against 50+ customizable legal parameters." },

@@ -8,6 +8,7 @@ dependencies = [
     "fastapi>=0.129.0",
     "langchain-google-genai>=4.2.1",
     "langgraph>=1.0.9",
+    "livekit-api>=1.1.0",
     "motor>=3.7.1",
     "pymupdf-layout>=1.27.1",
     "pymupdf4llm>=0.3.4",

@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import asyncio
 import tempfile
 from datetime import datetime
@@ -122,6 +123,57 @@ async def generate_draft(req: GenerateDraftRequest):
             highlighted = f'<mark data-negotiated="accepted">{r.replacement}</mark>'
             result = re.sub(pattern, highlighted, result, count=1)
     return {"markdown": result}
+
+
+# ── LiveKit Voice Agent Token ────────────────────────────────────────────────
+
+class LiveKitTokenRequest(BaseModel):
+    markdown: str
+    risks: str
+
+@app.post("/livekit-token")
+async def livekit_token(req: LiveKitTokenRequest):
+    """
+    Generate a LiveKit access token for the voice agent.
+    Document data is embedded in participant metadata so the agent can read it.
+    """
+    from livekit.api import AccessToken, VideoGrants, RoomConfiguration, RoomAgentDispatch
+
+    api_key = os.getenv("LIVEKIT_API_KEY")
+    api_secret = os.getenv("LIVEKIT_API_SECRET")
+    livekit_url = os.getenv("LIVEKIT_URL")
+
+    if not api_key or not api_secret or not livekit_url:
+        raise HTTPException(status_code=500, detail="LiveKit credentials not configured")
+
+    # Unique room per session
+    room_name = f"nyaya-{int(datetime.now().timestamp())}"
+
+    # Put document context in participant metadata (agent reads this)
+    metadata = json.dumps({
+        "markdown": req.markdown[:15000],  # cap to avoid exceeding metadata limits
+        "risks": req.risks[:5000],
+    })
+
+    token = (
+        AccessToken(api_key, api_secret)
+        .with_identity(f"user-{int(datetime.now().timestamp())}")
+        .with_name("User")
+        .with_metadata(metadata)
+        .with_grants(VideoGrants(
+            room_join=True,
+            room=room_name,
+        ))
+        .with_room_config(RoomConfiguration(
+            agents=[RoomAgentDispatch(agent_name="nyaya-agent")],
+        ))
+    )
+
+    return {
+        "token": token.to_jwt(),
+        "url": livekit_url,
+        "room": room_name,
+    }
 
 
 # ── Health Check ─────────────────────────────────────────────────────────────
