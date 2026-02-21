@@ -1,0 +1,41 @@
+# ==============================
+# LangChain Modern Stack (Compatible with LangGraph 0.0.55+)
+# ==============================
+
+langchain>=0.2.0,<0.3.0
+langchain-core>=0.2.0,<0.3.0
+langchain-community>=0.2.0,<0.3.0
+langchain-google-genai>=1.0.3
+langgraph>=0.0.55
+
+# ==============================
+# PDF Processing
+# ==============================
+PyMuPDF
+
+# ==============================
+# Web Search
+# ==============================
+duckduckgo-search
+requests
+beautifulsoup4
+
+# ==============================
+# Data Validation
+# ==============================
+pydantic>=2.7
+
+# ==============================
+# Web Framework & UI
+# ==============================
+fastapi
+uvicorn
+streamlit
+python-multipart
+
+# ==============================
+# Environment & Utilities
+# ==============================
+python-dotenv
+typing-extensions
+colorlog
