@@ -62,6 +62,7 @@ export default function AnalysisPage() {
         if (!activeMd) return;
         const { annotations: parsed } = parseAnnotations(activeMd);
         setAnnotations(parsed);
+        sessionStorage.setItem("nyayaai_risks", JSON.stringify(parsed));
     }, [activeMd, setAnnotations]);
 
     const handleApplyEdit = useCallback(() => {

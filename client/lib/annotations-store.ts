@@ -45,13 +45,14 @@ export function parseAnnotations(markdown: string): {
     const annotations: Annotation[] = [];
     let counter = 0;
 
-    // Match -TYPE-content-TYPE- optionally followed by -sg-...-sg- and -ipc-...-ipc-
+    // Match -TYPE-content-TYPE- optionally followed by -ipc-...-ipc- then -sg-...-sg-
+    // NOTE: actual markdown has -ipc- BEFORE -sg-, so the regex must match in that order
     const pattern =
-        /-(hr|mr|lr)-([\s\S]*?)-(hr|mr|lr)-(?:\s*-sg-([\s\S]*?)-sg-)?(?:\s*-ipc-([\s\S]*?)-ipc-)?/g;
+        /-(hr|mr|lr)-([\s\S]*?)-(hr|mr|lr)-(?:\s*-ipc-([\s\S]*?)-ipc-)?(?:\s*-sg-([\s\S]*?)-sg-)?/g;
 
     const cleanMarkdown = markdown.replace(
         pattern,
-        (_match, type: RiskLevel, content: string, _closeType, suggestion = "", ipc = "") => {
+        (_match, type: RiskLevel, content: string, _closeType, ipc = "", suggestion = "") => {
             const id = `risk-${counter++}`;
             annotations.push({
                 id,

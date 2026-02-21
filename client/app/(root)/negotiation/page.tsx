@@ -235,6 +235,15 @@ export default function NegotiationPage() {
     // Hydrate annotations from sessionStorage if store is empty
     useEffect(() => {
         if (annotations.length > 0) return;
+        // Try pre-stored risks first
+        const storedRisks = sessionStorage.getItem("nyayaai_risks");
+        if (storedRisks) {
+            try {
+                setAnnotations(JSON.parse(storedRisks));
+                return;
+            } catch { /* fallthrough */ }
+        }
+        // Fallback: re-parse from markdown
         const stored = sessionStorage.getItem("nyayaai_analysis");
         if (!stored) return;
         try {

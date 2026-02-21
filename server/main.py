@@ -1,4 +1,5 @@
 import os
+import re
 import asyncio
 import tempfile
 from datetime import datetime
@@ -100,15 +101,26 @@ class GenerateDraftRequest(BaseModel):
 @app.post("/generate-draft")
 async def generate_draft(req: GenerateDraftRequest):
     """
-    Simple find-and-replace: for each accepted replacement, find the original
-    clause text in the markdown and replace it with the new clause wrapped in
-    a <mark> tag for green highlighting on frontend.
+    For each accepted replacement, find the FULL risk marker block
+    (-TYPE-clause-TYPE- with optional -ipc- and -sg- tags) that contains
+    the original clause text, and replace the entire block with the
+    balanced clause wrapped in a <mark> tag for green highlighting.
     """
     result = req.original_md
     for r in req.replacements:
         if r.original and r.replacement:
+            # Build a regex that matches the entire risk block containing this clause
+            # Pattern: -TYPE- <clause> -TYPE- (optional -ipc-...-ipc-) (optional -sg-...-sg-)
+            escaped = re.escape(r.original.strip())
+            pattern = (
+                r"-(hr|mr|lr)-\s*"
+                + escaped
+                + r"\s*-(hr|mr|lr)-"
+                + r"(?:\s*-ipc-[\s\S]*?-ipc-)?"
+                + r"(?:\s*-sg-[\s\S]*?-sg-)?"
+            )
             highlighted = f'<mark data-negotiated="accepted">{r.replacement}</mark>'
-            result = result.replace(r.original, highlighted, 1)
+            result = re.sub(pattern, highlighted, result, count=1)
     return {"markdown": result}
 
 
