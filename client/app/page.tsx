@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { AuthDialog } from "@/components/auth-dialog";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const AGENT_API_BASE = process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:8000";
 
 export default function LandingPage() {
     const router = useRouter();
@@ -21,25 +22,66 @@ export default function LandingPage() {
         async (file: File) => {
             setUploading(true);
             try {
-                const formData = new FormData();
-                formData.append("file", file);
+                // Upload to BOTH backends in parallel
+                const plainForm = new FormData();
+                plainForm.append("file", file);
+                const agentForm = new FormData();
+                agentForm.append("file", file);
 
-                const res = await fetch(`${API_BASE}/upload`, {
-                    method: "POST",
-                    body: formData,
-                });
+                const [plainRes, agentRes] = await Promise.all([
+                    // Old server (8001) — just PDF→markdown
+                    fetch(`${API_BASE}/upload`, { method: "POST", body: plainForm }),
+                    // Agent system (8000) — full analysis
+                    fetch(`${AGENT_API_BASE}/analyze`, { method: "POST", body: agentForm }),
+                ]);
 
-                if (!res.ok) {
-                    const err = await res.json();
-                    alert(err.detail || "Upload failed");
+                // Handle plain markdown from old server
+                if (!plainRes.ok) {
+                    alert("Failed to convert PDF to markdown");
                     return;
                 }
+                const plainData = await plainRes.json();
 
-                const data = await res.json();
-                sessionStorage.setItem("nyayaai_analysis", JSON.stringify(data));
+                // Handle agent analysis result
+                if (!agentRes.ok) {
+                    const err = await agentRes.json();
+                    alert(err.detail || "Analysis failed");
+                    return;
+                }
+                const analysisResult = await agentRes.json();
+
+                // Download annotated markdown from agent system
+                const annotatedFile = Object.entries(analysisResult.files as Record<string, string>)
+                    .find(([key]) => key.includes("annotated_contract"));
+
+                let annotatedMd = "";
+                if (annotatedFile) {
+                    const mdRes = await fetch(`${AGENT_API_BASE}/download/${annotatedFile[1]}`);
+                    if (mdRes.ok) {
+                        annotatedMd = await mdRes.text();
+                    }
+                }
+
+                // Store original (clean) markdown from old server
+                sessionStorage.setItem("nyayaai_analysis", JSON.stringify(plainData));
+
+                // Store annotated markdown from agent system
+                sessionStorage.setItem("nyayaai_edited_md", annotatedMd);
+
+                // Store risk scores
+                sessionStorage.setItem("nyayaai_risk_score", JSON.stringify({
+                    overall_risk_score: analysisResult.overall_risk_score,
+                    high_risk_count: analysisResult.high_risk_count,
+                    medium_risk_count: analysisResult.medium_risk_count,
+                    low_risk_count: analysisResult.low_risk_count,
+                    total_clauses: analysisResult.total_clauses,
+                    executive_summary: analysisResult.executive_summary,
+                    top_risks: analysisResult.top_risks,
+                }));
+
                 router.push("/analysis");
             } catch {
-                alert("Failed to connect to server. Make sure the backend is running.");
+                alert("Failed to connect to servers. Make sure both backends are running.");
             } finally {
                 setUploading(false);
             }

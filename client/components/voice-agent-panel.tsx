@@ -159,7 +159,7 @@ export default function VoiceAgentPanel({ open, onClose }: VoiceAgentPanelProps)
                     : "";
                 const risksStr = risks || "[]";
 
-                const res = await fetch("http://localhost:8000/livekit-token", {
+                const res = await fetch("http://localhost:8001/livekit-token", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ markdown, risks: risksStr }),
