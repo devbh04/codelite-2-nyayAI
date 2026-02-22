@@ -1,5 +1,8 @@
 import { create } from "zustand";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const WS_BASE = API_BASE.replace(/^http/, "ws");
+
 export interface DebateMessage {
     party: "a" | "b";
     round: number;
@@ -76,7 +79,7 @@ export const useNegotiationStore = create<NegotiationState>((set, get) => ({
             errorMessage: null,
         });
 
-        ws = new WebSocket("ws://localhost:8001/ws/negotiate");
+        ws = new WebSocket(`${WS_BASE}/ws/negotiate`);
 
         ws.onopen = () => {
             set({ status: "negotiating" });
@@ -186,7 +189,7 @@ export const useNegotiationStore = create<NegotiationState>((set, get) => ({
 
         try {
             // Call backend to do the find-and-replace
-            const res = await fetch("http://localhost:8001/generate-draft", {
+            const res = await fetch(`${API_BASE}/generate-draft`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ original_md: originalMd, replacements }),
