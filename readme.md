@@ -551,13 +551,6 @@ Real-time negotiation streaming with debate messages.
 ## 🌐 Live Demo
 
 **Live URL:** *[Add your deployed URL here]*
-
----
-
-## 👥 Team
-
-*[Add your team details here]*
-
 ---
 
 ## 📄 License
