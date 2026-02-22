@@ -70,13 +70,14 @@ server = AgentServer()
 
 @server.rtc_session(agent_name="nyaya-agent")
 async def nyaya_agent(ctx: agents.JobContext):
+    import asyncio
+
     # Read document context from participant metadata
     document = ""
     risks = ""
+    got_metadata = asyncio.Event()
 
-    # Wait for the first participant (the user) to join
-    @ctx.room.on("participant_connected")
-    def on_participant(participant: rtc.RemoteParticipant):
+    def extract_metadata(participant):
         nonlocal document, risks
         metadata = participant.metadata
         if metadata:
@@ -84,18 +85,30 @@ async def nyaya_agent(ctx: agents.JobContext):
                 data = json.loads(metadata)
                 document = data.get("markdown", "")
                 risks = data.get("risks", "")
+                if document:
+                    got_metadata.set()
             except json.JSONDecodeError:
                 pass
 
-    # Also check existing participants
+    # Check participants already in the room
     for p in ctx.room.remote_participants.values():
-        if p.metadata:
-            try:
-                data = json.loads(p.metadata)
-                document = data.get("markdown", "")
-                risks = data.get("risks", "")
-            except json.JSONDecodeError:
-                pass
+        extract_metadata(p)
+
+    # Listen for new participants joining
+    @ctx.room.on("participant_connected")
+    def on_participant(participant: rtc.RemoteParticipant):
+        extract_metadata(participant)
+
+    # Also listen for metadata updates on existing participants
+    @ctx.room.on("participant_metadata_changed")
+    def on_metadata_changed(participant: rtc.Participant, old_metadata: str):
+        extract_metadata(participant)
+
+    # Wait up to 15 seconds for user with document metadata to join
+    try:
+        await asyncio.wait_for(got_metadata.wait(), timeout=15.0)
+    except asyncio.TimeoutError:
+        pass  # proceed with whatever we have
 
     # Build the full system prompt with document context
     full_prompt = SYSTEM_PROMPT.format(
