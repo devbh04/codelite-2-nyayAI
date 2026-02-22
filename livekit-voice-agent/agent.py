@@ -1,4 +1,5 @@
 import json
+import os
 from dotenv import load_dotenv
 from livekit.plugins import google
 from livekit import agents, rtc
@@ -70,32 +71,24 @@ server = AgentServer()
 
 @server.rtc_session(agent_name="nyaya-agent")
 async def nyaya_agent(ctx: agents.JobContext):
-    # Read document context from participant metadata
+    import httpx
+
+    # Fetch document context from server via HTTP
     document = ""
     risks = ""
 
-    # Wait for the first participant (the user) to join
-    @ctx.room.on("participant_connected")
-    def on_participant(participant: rtc.RemoteParticipant):
-        nonlocal document, risks
-        metadata = participant.metadata
-        if metadata:
-            try:
-                data = json.loads(metadata)
-                document = data.get("markdown", "")
-                risks = data.get("risks", "")
-            except json.JSONDecodeError:
-                pass
+    server_url = os.environ.get("SERVER_URL", "http://localhost:8001")
+    room_name = ctx.room.name
 
-    # Also check existing participants
-    for p in ctx.room.remote_participants.values():
-        if p.metadata:
-            try:
-                data = json.loads(p.metadata)
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{server_url}/voice-context/{room_name}", timeout=10.0)
+            if resp.status_code == 200:
+                data = resp.json()
                 document = data.get("markdown", "")
                 risks = data.get("risks", "")
-            except json.JSONDecodeError:
-                pass
+    except Exception as e:
+        print(f"[nyaya-agent] Failed to fetch context: {e}")
 
     # Build the full system prompt with document context
     full_prompt = SYSTEM_PROMPT.format(

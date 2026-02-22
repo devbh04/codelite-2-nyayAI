@@ -137,6 +137,9 @@ async def generate_draft(req: GenerateDraftRequest):
 
 # ── LiveKit Voice Agent Token ────────────────────────────────────────────────
 
+# In-memory store for voice agent document context (keyed by room name)
+voice_context_store: dict[str, dict] = {}
+
 class LiveKitTokenRequest(BaseModel):
     markdown: str
     risks: str
@@ -145,7 +148,7 @@ class LiveKitTokenRequest(BaseModel):
 async def livekit_token(req: LiveKitTokenRequest):
     """
     Generate a LiveKit access token for the voice agent.
-    Document data is embedded in participant metadata so the agent can read it.
+    Document context is stored server-side and fetched by the agent via HTTP.
     """
     from livekit.api import AccessToken, VideoGrants, RoomConfiguration, RoomAgentDispatch
 
@@ -159,17 +162,16 @@ async def livekit_token(req: LiveKitTokenRequest):
     # Unique room per session
     room_name = f"nyaya-{int(datetime.now().timestamp())}"
 
-    # Put document context in participant metadata (agent reads this)
-    metadata = json.dumps({
-        "markdown": req.markdown[:15000],  # cap to avoid exceeding metadata limits
-        "risks": req.risks[:5000],
-    })
+    # Store context server-side (agent will fetch this via HTTP)
+    voice_context_store[room_name] = {
+        "markdown": req.markdown[:30000],
+        "risks": req.risks[:10000],
+    }
 
     token = (
         AccessToken(api_key, api_secret)
         .with_identity(f"user-{int(datetime.now().timestamp())}")
         .with_name("User")
-        .with_metadata(metadata)
         .with_grants(VideoGrants(
             room_join=True,
             room=room_name,
@@ -184,6 +186,15 @@ async def livekit_token(req: LiveKitTokenRequest):
         "url": livekit_url,
         "room": room_name,
     }
+
+
+@app.get("/voice-context/{room_name}")
+async def get_voice_context(room_name: str):
+    """Agent calls this to get the document context for a room."""
+    ctx = voice_context_store.get(room_name)
+    if not ctx:
+        return {"markdown": "", "risks": ""}
+    return ctx
 
 
 # ── Health Check ─────────────────────────────────────────────────────────────
