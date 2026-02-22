@@ -151,32 +151,15 @@ export function RiskSidebar() {
             <div className="p-6 border-b border-border">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h2 className="text-lg font-bold text-foreground">Risk Score</h2>
-                        <div className="text-xs text-muted-foreground mt-1">AI-powered analysis</div>
+                        <h2 className="text-lg font-bold text-foreground">Executive Summary</h2>
+                        <div className="text-xs text-muted-foreground mt-1">AI-powered analysis. Based on Indian Laws.</div>
                     </div>
                     <div className={`flex items-center justify-center size-12 rounded-full font-bold text-lg border-2 ${scoreColor}`}>
                         {score}
                     </div>
                 </div>
-
-                {/* Stats row */}
-                <div className="flex gap-3 mb-3">
-                    <div className="flex-1 rounded-md bg-muted/40 px-3 py-2 text-center">
-                        <div className="text-lg font-bold text-foreground">{totalClauses}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Clauses</div>
-                    </div>
-                    <div className="flex-1 rounded-md bg-red-50 dark:bg-red-950/20 px-3 py-2 text-center">
-                        <div className="text-lg font-bold text-red-600">{hrCount}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">High</div>
-                    </div>
-                    <div className="flex-1 rounded-md bg-orange-50 dark:bg-orange-950/20 px-3 py-2 text-center">
-                        <div className="text-lg font-bold text-orange-600">{mrCount}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Medium</div>
-                    </div>
-                    <div className="flex-1 rounded-md bg-yellow-50 dark:bg-yellow-950/20 px-3 py-2 text-center">
-                        <div className="text-lg font-bold text-yellow-600">{lrCount}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Low</div>
-                    </div>
+                <div className="flex gap-3">
+                    <p className="text-muted-foreground text-sm leading-relaxed">Total we have found <strong>{totalClauses}</strong> clauses in this agreement.</p>
                 </div>
 
                 <p className="text-muted-foreground text-sm leading-relaxed mb-3">
