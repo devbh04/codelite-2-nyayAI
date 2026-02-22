@@ -1,13 +1,16 @@
 #!/bin/bash
 set -e
 
+# Get the directory where this script lives (repo root)
+DIR="$(cd "$(dirname "$0")" && pwd)"
+
 echo "Starting LiveKit voice agent in background..."
-cd /app/livekit-voice-agent
+cd "$DIR/livekit-voice-agent"
 python agent.py start &
 AGENT_PID=$!
 
-echo "Starting FastAPI server..."
-cd /app/server
+echo "Starting FastAPI server on port ${PORT:-8001}..."
+cd "$DIR/server"
 uvicorn main:app --host 0.0.0.0 --port ${PORT:-8001} &
 SERVER_PID=$!
 
