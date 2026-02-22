@@ -11,7 +11,7 @@ AGENT_PID=$!
 
 echo "Starting FastAPI server on port ${PORT:-8001}..."
 cd "$DIR/server"
-uvicorn main:app --host 0.0.0.0 --port ${PORT:-8001} &
+uvicorn main:app --host 0.0.0.0 --port 8001 &
 SERVER_PID=$!
 
 echo "Both processes started (agent=$AGENT_PID, server=$SERVER_PID)"
