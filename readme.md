@@ -550,7 +550,7 @@ Real-time negotiation streaming with debate messages.
 
 ## 🌐 Live Demo
 
-**Live URL:** *[Add your deployed URL here]*
+**Live URL:** *[https://nyayai-tnn.vercel.app](https://nyayai-tnn.vercel.app)*
 ---
 
 ## 📄 License
