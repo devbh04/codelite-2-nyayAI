@@ -151,13 +151,19 @@ export default function VoiceAgentPanel({ open, onClose }: VoiceAgentPanelProps)
 
             try {
                 // Read document from sessionStorage
-                const stored = sessionStorage.getItem("nyayaai_analysis");
-                const risks = sessionStorage.getItem("nyayaai_risks");
+                const editedMd = sessionStorage.getItem("nyayaai_edited_md");
+                const riskScore = sessionStorage.getItem("nyayaai_risks");
 
-                const markdown = stored
-                    ? JSON.parse(stored).markdown || ""
-                    : "";
-                const risksStr = risks || "[]";
+                // Use edited md directly (it's a plain string, not JSON)
+                // Fall back to original analysis markdown if edited not available
+                let markdown = editedMd || "";
+                if (!markdown) {
+                    const stored = sessionStorage.getItem("nyayaai_analysis");
+                    if (stored) {
+                        try { markdown = JSON.parse(stored).markdown || ""; } catch { /* ignore */ }
+                    }
+                }
+                const risksStr = riskScore || "{}";
 
                 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
                 const res = await fetch(`${apiBase}/livekit-token`, {
