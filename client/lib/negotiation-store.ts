@@ -171,13 +171,12 @@ export const useNegotiationStore = create<NegotiationState>((set, get) => ({
     buildFinalDraft: async () => {
         const state = get();
 
-        // Get original markdown from sessionStorage
-        const stored = sessionStorage.getItem("nyayaai_analysis");
-        if (!stored) {
-            set({ errorMessage: "Original markdown not found" });
+        // Get annotated (edited) markdown from sessionStorage
+        const editedMd = sessionStorage.getItem("nyayaai_edited_md");
+        if (!editedMd) {
+            set({ errorMessage: "Edited markdown not found" });
             return;
         }
-        const originalMd: string = JSON.parse(stored).markdown;
 
         // Build replacements array from accepted debates
         const replacements = Object.values(state.debates)
@@ -188,11 +187,11 @@ export const useNegotiationStore = create<NegotiationState>((set, get) => ({
             }));
 
         try {
-            // Call backend to do the find-and-replace
+            // Call backend — send edited_md, it strips tags then applies replacements
             const res = await fetch(`${API_BASE}/generate-draft`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ original_md: originalMd, replacements }),
+                body: JSON.stringify({ edited_md: editedMd, replacements }),
             });
 
             if (!res.ok) throw new Error(`Server error: ${res.status}`);

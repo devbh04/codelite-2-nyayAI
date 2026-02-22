@@ -96,32 +96,42 @@ class Replacement(BaseModel):
     replacement: str
 
 class GenerateDraftRequest(BaseModel):
-    original_md: str
+    edited_md: str
     replacements: list[Replacement]
+
+
+def strip_annotation_tags(md: str) -> str:
+    """
+    1. Remove -ipc-...-ipc- blocks (including content between tags)
+    2. Remove -sg-...-sg- blocks (including content between tags)
+    3. Remove -hr-, -mr-, -lr- tags but KEEP the clause content between them
+    """
+    # Strip -ipc- blocks entirely
+    result = re.sub(r'-ipc-[\s\S]*?-ipc-', '', md)
+    # Strip -sg- blocks entirely
+    result = re.sub(r'-sg-[\s\S]*?-sg-', '', result)
+    # Strip risk tags but keep the content between them
+    result = re.sub(r'-(hr|mr|lr)-([\s\S]*?)-(hr|mr|lr)-', r'\2', result)
+    # Clean up extra blank lines left behind
+    result = re.sub(r'\n{3,}', '\n\n', result)
+    return result.strip()
+
 
 @app.post("/generate-draft")
 async def generate_draft(req: GenerateDraftRequest):
     """
-    For each accepted replacement, find the FULL risk marker block
-    (-TYPE-clause-TYPE- with optional -ipc- and -sg- tags) that contains
-    the original clause text, and replace the entire block with the
-    balanced clause wrapped in a <mark> tag for green highlighting.
+    Takes the annotated (edited) markdown, strips all risk/ipc/sg tags
+    to get the clean original, then applies negotiation replacements.
     """
-    result = req.original_md
+    # Step 1: Strip all annotation tags to get clean markdown
+    clean_md = strip_annotation_tags(req.edited_md)
+
+    # Step 2: Apply negotiation replacements via find-and-replace
+    result = clean_md
     for r in req.replacements:
         if r.original and r.replacement:
-            # Build a regex that matches the entire risk block containing this clause
-            # Pattern: -TYPE- <clause> -TYPE- (optional -ipc-...-ipc-) (optional -sg-...-sg-)
-            escaped = re.escape(r.original.strip())
-            pattern = (
-                r"-(hr|mr|lr)-\s*"
-                + escaped
-                + r"\s*-(hr|mr|lr)-"
-                + r"(?:\s*-ipc-[\s\S]*?-ipc-)?"
-                + r"(?:\s*-sg-[\s\S]*?-sg-)?"
-            )
             highlighted = f'<mark data-negotiated="accepted">{r.replacement}</mark>'
-            result = re.sub(pattern, highlighted, result, count=1)
+            result = result.replace(r.original.strip(), highlighted, 1)
     return {"markdown": result}
 
 
