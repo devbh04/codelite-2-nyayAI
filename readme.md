@@ -12,7 +12,7 @@
 [![Google Gemini](https://img.shields.io/badge/Gemini-2.5_Flash-4285F4?style=for-the-badge&logo=google)](https://ai.google.dev/)
 [![LiveKit](https://img.shields.io/badge/LiveKit-Voice_AI-FF6B6B?style=for-the-badge)](https://livekit.io/)
 
-[Live Demo](#) • [Documentation](#api-documentation) • [Architecture](#architecture)
+[Live Demo](https://nyayai-tnn.vercel.app/) • [Youtube Video](https://youtu.be/7AumTu6EZSk)
 
 </div>
 
@@ -25,8 +25,6 @@
 - [Innovation & Unique Approach](#-innovation--unique-approach)
 - [Key Features](#-key-features)
 - [Bonus Features Attempted](#-bonus-features-attempted)
-- [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
 - [Getting Started](#-getting-started)
 - [API Documentation](#-api-documentation)
