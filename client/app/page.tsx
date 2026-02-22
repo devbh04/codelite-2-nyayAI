@@ -146,7 +146,7 @@ export default function LandingPage() {
                             <div className="flex size-8 items-center justify-center rounded">
                                 <img src="/logo.png" alt="" />
                             </div>
-                            <span className="text-lg font-bold tracking-tight">NyayaAI</span>
+                            <span className="text-lg font-bold tracking-tight">NyayAI</span>
                         </div>
                         <nav className="hidden md:flex items-center gap-8">
                             <a className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" href="#features">Features</a>

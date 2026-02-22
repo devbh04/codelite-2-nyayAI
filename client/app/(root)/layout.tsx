@@ -51,7 +51,7 @@ export default function RootLayout({
                         <div className="flex size-8 items-center justify-center rounded">
                             <img src="/logo.png" alt="" />
                         </div>
-                        <span className="text-lg font-bold tracking-tight">NyayaAI</span>
+                        <span className="text-lg font-bold tracking-tight">NyayAI</span>
                     </button>
                 </div>
 
