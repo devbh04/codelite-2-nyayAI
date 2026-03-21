@@ -7,6 +7,13 @@ import { useAuth } from "@/lib/auth-context";
 import { AuthDialog } from "@/components/auth-dialog";
 import { Highlighter } from "@/components/ui/highlighter";
 import { WordRotate } from "@/components/ui/word-rotate";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+    gsap.registerPlugin(useGSAP, ScrollTrigger);
+}
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
 const AGENT_API_BASE = process.env.NEXT_PUBLIC_AGENT_API_URL || "http://localhost:8000";
@@ -19,6 +26,89 @@ export default function LandingPage() {
     const [dragActive, setDragActive] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const pendingFileRef = useRef<File | null>(null);
+    const container = useRef<HTMLDivElement>(null);
+
+    useGSAP(() => {
+        gsap.from("nav", { y: -100, opacity: 0, duration: 1, ease: "power3.out" });
+
+        gsap.from(".hero-content > *", {
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.2,
+            ease: "power3.out",
+            delay: 0.2
+        });
+
+        gsap.from(".stat-item", {
+            scrollTrigger: {
+                trigger: ".stats-section",
+                start: "top 85%",
+            },
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.1,
+            ease: "power2.out",
+        });
+
+        gsap.from(".split-left", {
+            scrollTrigger: {
+                trigger: ".split-section",
+                start: "top 75%",
+            },
+            x: -50,
+            opacity: 0,
+            duration: 1,
+            ease: "power3.out",
+        });
+        
+        gsap.from(".split-right", {
+            scrollTrigger: {
+                trigger: ".split-section",
+                start: "top 75%",
+            },
+            x: 50,
+            opacity: 0,
+            duration: 1,
+            ease: "power3.out",
+        });
+
+        gsap.from(".feature-card", {
+            scrollTrigger: {
+                trigger: ".features-section",
+                start: "top 80%",
+            },
+            y: 50,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: "power2.out",
+        });
+
+        gsap.from(".step-item", {
+            scrollTrigger: {
+                trigger: ".how-it-works-section",
+                start: "top 60%",
+            },
+            y: 50,
+            opacity: 0,
+            duration: 0.2,
+            stagger: 0.3,
+            ease: "power3.out",
+        });
+
+        gsap.from(".cta-content", {
+            scrollTrigger: {
+                trigger: ".cta-section",
+                start: "top 75%",
+            },
+            y: 30,
+            opacity: 0,
+            duration: 1,
+            ease: "power2.out",
+        });
+    }, { scope: container });
 
     const doUpload = useCallback(
         async (file: File) => {
@@ -126,341 +216,359 @@ export default function LandingPage() {
     };
 
     return (
-        <div className="min-h-screen w-full bg-white relative text-foreground">
-            {/* Morning Haze */}
-            <div
-                className="absolute inset-0 z-0"
-                style={{
-                    backgroundImage: `
-                        radial-gradient(circle at 50% 100%, rgba(253, 224, 71, 0.6) 0%, transparent 70%),
-                        radial-gradient(circle at 50% 100%, rgba(251, 191, 36, 0.55) 0%, transparent 85%),
-                        radial-gradient(circle at 50% 100%, rgba(244, 114, 182, 0.6) 0%, transparent 95%)
-                    `,
-                }}
+        <div ref={container} className="min-h-screen w-full bg-surface text-on-surface font-manrope selection:bg-primary-fixed selection:text-on-primary-fixed relative">
+            
+            {/* Hidden file input for file uploading */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf"
+                className="hidden"
+                onChange={handleFileChange}
             />
-            <div className="relative z-10 flex flex-col min-h-screen">
-                {/* Header */}
-                <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
-                    <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 lg:px-8">
-                        <div className="flex items-center gap-3">
-                            <div className="flex size-8 items-center justify-center rounded">
-                                <img src="/logo.png" alt="" />
-                            </div>
-                            <span className="text-lg font-bold tracking-tight">NyayAI</span>
-                        </div>
-                        <nav className="hidden md:flex items-center gap-8">
-                            <a className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" href="#features">Features</a>
-                            <a className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" href="#how-it-works">How it Works</a>
-                            <a className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors" href="#cta">Pricing</a>
-                        </nav>
-                        <div className="flex items-center gap-4">
-                            {!isLoading && isSignedIn ? (
-                                <>
-                                    <span className="hidden text-sm font-medium text-muted-foreground sm:block">
-                                        Hi, {user?.name}
-                                    </span>
-                                    <Button variant="outline" size="sm" onClick={signOut}>
-                                        Sign Out
-                                    </Button>
-                                </>
-                            ) : (
-                                <>
-                                    <button
-                                        className="hidden text-sm font-medium text-muted-foreground hover:text-foreground sm:block"
-                                        onClick={() => setAuthDialogOpen(true)}
-                                    >
-                                        Log in
-                                    </button>
-                                    <Button size="sm" onClick={() => setAuthDialogOpen(true)}>
-                                        Get Started
-                                    </Button>
-                                </>
-                            )}
-                        </div>
+
+            {/* TopNavBar */}
+            <nav className="fixed top-0 w-full h-20 z-50 bg-surface/80 backdrop-blur-xl grid-bg">
+                <div className="flex justify-between items-center px-8 w-full max-w-[1440px] mx-auto h-full">
+                    <div className="font-anton text-3xl tracking-tighter text-[#ffe17c]">NYAYAI</div>
+                    <div className="hidden md:flex gap-8 items-center">
+                        <a className="font-satoshi font-bold tracking-tight text-sm text-white/70 hover:text-white transition-colors" href="#features">FEATURES</a>
+                        <a className="font-satoshi font-bold tracking-tight text-sm text-white/70 hover:text-white transition-colors" href="#how-it-works">HOW IT WORKS</a>
+                        <a className="font-satoshi font-bold tracking-tight text-sm text-white/70 hover:text-white transition-colors" href="#pricing">PRICING</a>
                     </div>
-                </header>
+                    
+                    <div className="flex items-center gap-4">
+                        {!isLoading && isSignedIn ? (
+                            <>
+                                <span className="hidden text-sm font-medium text-white/70 font-satoshi sm:block">
+                                    Hi, {user?.name}
+                                </span>
+                                <button className="bg-transparent border border-outline-variant text-white px-6 py-2 font-anton text-sm hover:bg-white/10 transition-all duration-300" onClick={signOut}>
+                                    SIGN OUT
+                                </button>
+                            </>
+                        ) : (
+                            <button className="bg-primary-fixed text-on-primary-fixed px-6 py-2 font-anton text-sm hover:translate-x-[-4px] hover:translate-y-[-4px] transition-all duration-300 shadow-[4px_4px_0px_0px_#2f3731]" onClick={() => setAuthDialogOpen(true)}>
+                                LOG IN
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </nav>
 
-                <main className="flex-1">
-                    {/* Hero */}
-                    <section className="relative pt-24 pb-20 lg:pt-20 lg:pb-12">
-                        {/* Diagonal Fade Center Grid */}
-                        <div
-                            className="absolute -inset-12 z-0"
-                            style={{
-                                backgroundImage: `
-                                    linear-gradient(to right, #d1d5db 1px, transparent 1px),
-                                    linear-gradient(to bottom, #d1d5db 1px, transparent 1px)
-                                `,
-                                backgroundSize: "32px 32px",
-                                WebkitMaskImage:
-                                    "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 70%)",
-                                maskImage:
-                                    "radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 70%)",
-                            }}
-                        />
-                        <div className="mx-auto max-w-6xl px-6 lg:px-8 text-center relative z-10">
-                            <div className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground mb-8">
-                                <span className="mr-2 h-1.5 w-1.5 rounded-full bg-primary"></span>
-                                Supports latest Indian Laws
-                            </div>
-                            <h1 className="mx-auto max-w-5xl text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl mb-6 leading-tight">
-                                Your Autonomous Legal <br />
-                                <WordRotate words={["Red-Flag Agent", "Negotiation Assistant", "Risk Assessment"]} />
-                            </h1>
-                            <p className="mx-auto max-w-2xl text-lg text-black pt-4 mb-12 leading-relaxed font-light">
-                                Instant{" "}
-                                <Highlighter action="highlight" color="#fab44d">
-                                    risk assessment and redlining
-                                </Highlighter>{" "}
-                                based on Indian Contract Act &amp; Corporate Law. Simply upload your contract and let our{" "}
-                                <Highlighter action="underline" color="#87CEFA">
-                                    multi-agent AI
-                                </Highlighter>{" "}
-                                secure your interests.
-                            </p>
-
-                            {/* Upload zone */}
-                            <div className="mx-auto max-w-xl">
-                                <div
-                                    className={`group relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-12 transition-all cursor-pointer ${dragActive
-                                        ? "border-primary bg-primary/5 shadow-md"
-                                        : "border-border bg-background/70 hover:border-primary hover:bg-background hover:shadow-sm"
-                                        } ${uploading ? "pointer-events-none opacity-60" : ""}`}
-                                    onClick={() => fileInputRef.current?.click()}
-                                    onDragOver={(e) => {
-                                        e.preventDefault();
-                                        setDragActive(true);
-                                    }}
-                                    onDragLeave={() => setDragActive(false)}
-                                    onDrop={handleDrop}
+            <main className="pt-20">
+                {/* Hero Section */}
+                <section className="min-h-screen flex flex-col justify-center items-start px-8 py-20 grid-bg relative overflow-hidden" 
+                         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                         onDragLeave={() => setDragActive(false)}
+                         onDrop={handleDrop}>
+                    <div className="max-w-[1440px] mx-auto w-full hero-content">
+                        <div className="inline-flex items-center gap-2 px-4 py-1 bg-surface-container-highest border border-outline-variant/30 mb-8">
+                            <span className="w-2 h-2 rounded-full bg-primary-fixed animate-pulse"></span>
+                            <span className="font-satoshi text-xs font-bold tracking-widest uppercase">Supports latest Indian Laws</span>
+                        </div>
+                        <h1 className="font-anton text-8xl md:text-9xl uppercase leading-[0.9] tracking-tighter mb-12 max-w-5xl">
+                            Your Autonomous Legal <span className="skew-highlight text-neutral-300 stroke-text">Red-Flag Agent</span>
+                        </h1>
+                        <p className="font-satoshi text-xl md:text-2xl text-on-surface-variant max-w-3xl mb-12">
+                            Instant risk assessment and redlining based on Indian Contract Act &amp; Corporate Law. Simply upload your contract and let our multi-agent AI secure your interests.
+                        </p>
+                        <div className="flex flex-col gap-6 w-full max-w-2xl">
+                            <div className={`flex flex-col md:flex-row gap-0 w-full transition-all border ${dragActive ? 'border-primary-fixed bg-primary-fixed/5' : 'border-transparent'}`}>
+                                <div className="flex-grow bg-surface-container-low border-b-2 border-tertiary-fixed-dim p-4 md:p-6 font-satoshi text-base md:text-lg flex items-center gap-4 text-white/50 cursor-pointer hover:bg-surface-container-highest transition-colors"
+                                     onClick={() => fileInputRef.current?.click()}
                                 >
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept=".pdf"
-                                        className="hidden"
-                                        onChange={handleFileChange}
-                                    />
-                                    <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-background border border-border text-muted-foreground shadow-sm transition-transform group-hover:scale-105 group-hover:text-primary group-hover:border-primary/20">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
-                                        </svg>
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-base font-semibold">
-                                            {uploading ? "Uploading & Analyzing..." : "Upload Contract"}
-                                        </p>
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                            PDF up to 10MB — drag & drop or click to browse
-                                        </p>
-                                    </div>
-                                    <div className="mt-6">
-                                        <Button
-                                            disabled={uploading}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                fileInputRef.current?.click();
-                                            }}
-                                        >
-                                            {uploading ? "Processing..." : "Analyze Now"}
-                                        </Button>
-                                    </div>
-                                    <div className="mt-4 flex items-center justify-center gap-4 text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider">
-                                        <span className="flex items-center gap-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-                                            Encrypted
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" /><path d="m9 12 2 2 4-4" /></svg>
-                                            ISO 27001
-                                        </span>
-                                    </div>
+                                    <span className="material-symbols-outlined">{uploading ? "hourglass_empty" : "upload_file"}</span>
+                                    <span>{uploading ? "Uploading & Analyzing..." : "PDF up to 10MB — drag & drop or click to browse"}</span>
                                 </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Stats */}
-                    <section className="border-y border-border bg-muted/30 py-12">
-                        <div className="mx-auto max-w-6xl px-6 lg:px-8">
-                            <div className="grid grid-cols-2 gap-8 md:grid-cols-4 text-center">
-                                {[
-                                    { value: "10k+", label: "Contracts Analyzed" },
-                                    { value: "50k+", label: "Risks Detected" },
-                                    { value: "500+", label: "Acts Covered" },
-                                    { value: "99%", label: "Accuracy Rate" },
-                                ].map((stat) => (
-                                    <div key={stat.label} className="flex flex-col items-center gap-1">
-                                        <span className="text-3xl font-bold tracking-tight">{stat.value}</span>
-                                        <span className="text-xs font-medium text-muted-foreground">{stat.label}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Multi-Agent Architecture */}
-                    <section id="features" className="py-24 bg-background">
-                        <div className="mx-auto max-w-6xl px-6 lg:px-8">
-                            <div className="mb-16 md:text-center max-w-2xl mx-auto">
-                                <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Multi-Agent Architecture</h2>
-                                <p className="mt-4 text-base text-muted-foreground font-light">
-                                    Three specialized agents work in tandem to deconstruct, analyze, and cross-reference your contracts against Indian legal frameworks.
-                                </p>
-                            </div>
-                            <div className="grid gap-8 md:grid-cols-3">
-                                {[
-                                    {
-                                        icon: (
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
-                                        ),
-                                        title: "Parser Agent",
-                                        desc: "Deconstructs complex legalese into structured JSON data. It identifies definitions, clauses, and schedules, preparing the document for analysis.",
-                                    },
-                                    {
-                                        icon: (
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
-                                        ),
-                                        title: "Risk Detector",
-                                        desc: "Scans for unfair indemnity clauses, unlimited liability, and ambiguous termination rights based on your specific playbook parameters.",
-                                    },
-                                    {
-                                        icon: (
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m14 14-8.5 8.5a2.12 2.12 0 1 1-3-3L11 11" /><path d="M16 16 6 6" /><path d="m8 8 6-6 4 4-6 6" /><path d="m16 16 6 6" /></svg>
-                                        ),
-                                        title: "Legal Cross-Ref",
-                                        desc: "Validates clauses against current Indian case law, the Indian Contract Act (1872), and recent Supreme Court judgments.",
-                                    },
-                                ].map((card) => (
-                                    <div
-                                        key={card.title}
-                                        className="group rounded-xl border border-border bg-background p-8 transition-all hover:shadow-lg hover:-translate-y-1"
-                                    >
-                                        <div className="mb-6 inline-flex size-10 items-center justify-center rounded-lg bg-muted text-foreground ring-1 ring-border">
-                                            {card.icon}
-                                        </div>
-                                        <h3 className="mb-3 text-lg font-bold">{card.title}</h3>
-                                        <p className="text-sm leading-relaxed text-muted-foreground">{card.desc}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* How It Works */}
-                    <section id="how-it-works" className="py-24 bg-muted/30 border-t border-border">
-                        <div className="mx-auto max-w-6xl px-6 lg:px-8">
-                            <div className="mb-16">
-                                <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Legal Intelligence Flow</h2>
-                                <p className="mt-4 text-base text-muted-foreground font-light max-w-xl">
-                                    Streamline your contract review process in three simple, automated steps.
-                                </p>
-                            </div>
-                            <div className="grid gap-12 md:grid-cols-3 relative">
-                                <div className="absolute top-10 left-0 right-0 hidden md:block border-t border-dashed border-border w-full z-0"></div>
-                                {[
-                                    { step: "1", title: "Upload Contract", desc: "Securely drag and drop your PDF file. We support English and Hindi legal documents." },
-                                    { step: "2", title: "AI Analysis", desc: "Our agents parse, interpret, and risk-score every clause against 50+ customizable legal parameters." },
-                                    { step: "3", title: "Risk Score & Report", desc: "Receive a downloadable report with a risk heatmap and suggested redlines ready for negotiation." },
-                                ].map((item) => (
-                                    <div key={item.step} className="relative z-10 flex flex-col gap-6">
-                                        <div className="flex size-20 items-center justify-center rounded-full bg-background border border-border shadow-sm mx-auto md:mx-0">
-                                            <span className="text-xl font-bold">{item.step}</span>
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-bold mb-2">{item.title}</h3>
-                                            <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* CTA */}
-                    <section id="cta" className="py-24 bg-background border-t border-border">
-                        <div className="mx-auto max-w-4xl px-6 lg:px-8 text-center">
-                            <h2 className="text-3xl font-bold tracking-tight mb-6">Secure your legal agreements</h2>
-                            <p className="text-muted-foreground mb-10 text-lg font-light">
-                                Join forward-thinking legal teams using NyayaAI to reduce contract review time by 80%.
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                                <Button
-                                    size="lg"
-                                    className="min-w-[160px]"
+                                <button
+                                    disabled={uploading}
+                                    className="bg-primary-fixed text-on-primary-fixed px-8 md:px-12 py-4 md:py-6 font-anton text-xl md:text-2xl hover:bg-white transition-all duration-300 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                                     onClick={() => {
-                                        if (isSignedIn) {
-                                            fileInputRef.current?.click();
-                                        } else {
+                                        if (!isSignedIn) {
                                             setAuthDialogOpen(true);
+                                        } else {
+                                            fileInputRef.current?.click();
                                         }
                                     }}
                                 >
-                                    Start Free Trial
-                                </Button>
-                                <Button variant="outline" size="lg" className="min-w-[160px]">
-                                    Book a Demo
-                                </Button>
+                                    {uploading ? "PROCESSING..." : "UPLOAD CONTRACT"}
+                                </button>
                             </div>
-                            <p className="mt-8 text-xs text-muted-foreground/50">
-                                No credit card required · 14-day free trial
-                            </p>
-                        </div>
-                    </section>
-                </main>
-
-                {/* Footer */}
-                <footer className="bg-muted/30 border-t border-border py-16 text-sm">
-                    <div className="mx-auto max-w-6xl px-6 lg:px-8">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-16">
-                            <div className="col-span-2 md:col-span-1 pr-8">
-                                <div className="flex items-center gap-2 mb-6">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="m18 16 4-4-4-4" /><path d="m6 8-4 4 4 4" /><path d="m14.5 4-5 16" />
-                                    </svg>
-                                    <span className="text-base font-bold">NyayaAI</span>
+                            <div className="flex gap-4 items-center flex-wrap">
+                                <div className="flex items-center gap-1 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                                    <span className="material-symbols-outlined text-[14px] text-primary-fixed">lock</span>
+                                    <span className="font-satoshi text-[10px] font-bold tracking-widest uppercase text-white/60">ENCRYPTED</span>
                                 </div>
-                                <p className="text-muted-foreground leading-relaxed">
-                                    Autonomous legal intelligence for the modern Indian enterprise.
-                                </p>
-                            </div>
-                            {[
-                                { title: "Product", links: ["Features", "Pricing", "API"] },
-                                { title: "Resources", links: ["Blog", "Legal Playbooks", "Case Studies"] },
-                                { title: "Company", links: ["About Us", "Contact", "Privacy"] },
-                            ].map((col) => (
-                                <div key={col.title}>
-                                    <h3 className="font-semibold mb-4">{col.title}</h3>
-                                    <ul className="space-y-3 text-muted-foreground">
-                                        {col.links.map((link) => (
-                                            <li key={link}>
-                                                <a className="hover:text-foreground transition-colors" href="#">
-                                                    {link}
-                                                </a>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                <div className="flex items-center gap-1 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                                    <span className="material-symbols-outlined text-[14px] text-primary-fixed">verified_user</span>
+                                    <span className="font-satoshi text-[10px] font-bold tracking-widest uppercase text-white/60">ISO 27001</span>
                                 </div>
-                            ))}
-                        </div>
-                        <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground/60">
-                            <p>© 2026 NyayaAI Technologies Pvt Ltd.</p>
-                            <div className="flex gap-6">
-                                <a className="hover:text-foreground transition-colors" href="#">Terms</a>
-                                <a className="hover:text-foreground transition-colors" href="#">Privacy</a>
-                                <a className="hover:text-foreground transition-colors" href="#">Cookies</a>
                             </div>
                         </div>
                     </div>
-                </footer>
+                </section>
 
-                {/* Auth Dialog */}
-                <AuthDialog
-                    open={authDialogOpen}
-                    onOpenChange={setAuthDialogOpen}
-                    onSuccess={handleAuthSuccess}
-                />
-            </div>
+                {/* Stats Section */}
+                <section className="bg-white py-16 stats-section">
+                    <div className="max-w-[1440px] mx-auto grid grid-cols-2 lg:grid-cols-4 gap-12 px-8">
+                        <div className="flex flex-col stat-item">
+                            <span className="font-satoshi text-5xl md:text-6xl font-bold text-[#0e1510] tracking-tighter">10k+</span>
+                            <span className="font-anton text-base md:text-lg text-[#0e1510]/60 uppercase mt-2">Contracts Analyzed</span>
+                        </div>
+                        <div className="flex flex-col stat-item">
+                            <span className="font-satoshi text-5xl md:text-6xl font-bold text-[#0e1510] tracking-tighter">50k+</span>
+                            <span className="font-anton text-base md:text-lg text-[#0e1510]/60 uppercase mt-2">Risks Detected</span>
+                        </div>
+                        <div className="flex flex-col stat-item">
+                            <span className="font-satoshi text-5xl md:text-6xl font-bold text-[#0e1510] tracking-tighter">500+</span>
+                            <span className="font-anton text-base md:text-lg text-[#0e1510]/60 uppercase mt-2">Acts Covered</span>
+                        </div>
+                        <div className="flex flex-col stat-item">
+                            <span className="font-satoshi text-5xl md:text-6xl font-bold text-[#0e1510] tracking-tighter">99%</span>
+                            <span className="font-anton text-base md:text-lg text-[#0e1510]/60 uppercase mt-2">Accuracy Rate</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Problem-Solution Split */}
+                <section className="flex flex-col lg:flex-row w-full border-t border-b border-outline-variant/20 split-section">
+                    <div className="flex-1 bg-surface-container-low p-10 md:p-24 split-left">
+                        <h2 className="font-anton text-4xl md:text-5xl mb-12 uppercase text-white/30">THE OLD WAY</h2>
+                        <ul className="space-y-8">
+                            <li className="flex items-start gap-4">
+                                <span className="material-symbols-outlined text-error text-3xl">close</span>
+                                <p className="font-satoshi text-lg md:text-xl">Manual review taking 48-72 hours per draft.</p>
+                            </li>
+                            <li className="flex items-start gap-4">
+                                <span className="material-symbols-outlined text-error text-3xl">close</span>
+                                <p className="font-satoshi text-lg md:text-xl">Human error in identifying outdated IPC references.</p>
+                            </li>
+                            <li className="flex items-start gap-4">
+                                <span className="material-symbols-outlined text-error text-3xl">close</span>
+                                <p className="font-satoshi text-lg md:text-xl">High hourly legal fees for standard boilerplate.</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="flex-1 bg-[#272727] p-10 md:p-24 border-y-8 lg:border-y-0 lg:border-x-8 border-primary-fixed split-right">
+                        <h2 className="font-anton text-4xl md:text-5xl mb-12 uppercase text-primary-fixed">THE FLUX WAY</h2>
+                        <ul className="space-y-8">
+                            <li className="flex items-start gap-4">
+                                <span className="material-symbols-outlined text-primary-fixed text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                <p className="font-satoshi text-lg md:text-xl text-white">Instant red-flag reporting under 30 seconds.</p>
+                            </li>
+                            <li className="flex items-start gap-4">
+                                <span className="material-symbols-outlined text-primary-fixed text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                <p className="font-satoshi text-lg md:text-xl text-white">Automatic Bharatiya Nyaya Sanhita alignment.</p>
+                            </li>
+                            <li className="flex items-start gap-4">
+                                <span className="material-symbols-outlined text-primary-fixed text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                                <p className="font-satoshi text-lg md:text-xl text-white">Flat subscription for unlimited deep scans.</p>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                {/* Bento Grid Features Section */}
+                <section className="py-24 px-4 md:px-8 bg-surface features-section" id="features">
+                    <div className="max-w-[1440px] mx-auto mb-16 feature-card">
+                        <h2 className="font-anton text-5xl md:text-7xl uppercase mb-6">Multi-Agent Architecture</h2>
+                        <p className="font-satoshi text-lg md:text-xl text-on-surface-variant max-w-2xl">Three specialized agents work in tandem to deconstruct, analyze, and cross-reference your contracts against Indian legal frameworks.</p>
+                    </div>
+                    <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Agent 1 */}
+                        <div className="lg:col-span-2 bg-[#f8f9fa] p-8 md:p-10 flex flex-col justify-between min-h-[400px] feature-card">
+                            <div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <span className="material-symbols-outlined text-surface text-3xl">account_tree</span>
+                                    <h3 className="font-anton text-3xl md:text-4xl text-[#0e1510] uppercase">Parser Agent</h3>
+                                </div>
+                                <p className="font-satoshi text-base md:text-lg text-[#0e1510]/70 max-w-md">Deconstructs complex legalese into structured JSON data. It identifies definitions, clauses, and schedules, preparing the document for analysis.</p>
+                            </div>
+                            <div className="mt-8 relative h-48 bg-white border border-black/10 p-6 shadow-xl overflow-hidden font-satoshi text-xs text-black/40 rounded-sm">
+                                <div className="flex justify-between items-center mb-4 border-b pb-2">
+                                    <span>document_structure.json</span>
+                                    <div className="flex gap-1">
+                                        <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                                        <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                                        <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                                    </div>
+                                </div>
+                                <div className="space-y-1 font-mono">
+                                    <div className="text-blue-600">{`{`}</div>
+                                    <div className="pl-4">"clauses": [</div>
+                                    <div className="pl-8 text-green-600">"1.1_definitions": {`{ ... },`}</div>
+                                    <div className="pl-8 text-green-600">"4.2_indemnity": {`{ "risk": "high" },`}</div>
+                                    <div className="pl-8 text-green-600">"9.0_termination": [ ... ]</div>
+                                    <div className="pl-4">]</div>
+                                    <div className="text-blue-600">{`}`}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Agent 2 */}
+                        <div className="bg-surface-container-low p-8 md:p-10 flex flex-col justify-between border-b-8 border-error min-h-[400px] feature-card">
+                            <span className="material-symbols-outlined text-error text-5xl mb-6">gpp_maybe</span>
+                            <div>
+                                <h3 className="font-anton text-3xl text-white mb-4 uppercase">Risk Detector</h3>
+                                <p className="font-satoshi text-white/60 text-base md:text-lg">Scans for unfair indemnity clauses, unlimited liability, and ambiguous termination rights based on your specific playbook parameters.</p>
+                            </div>
+                        </div>
+                        {/* Agent 3 */}
+                        <div className="bg-primary-fixed p-8 md:p-10 flex flex-col justify-between min-h-[400px] feature-card">
+                            <span className="material-symbols-outlined text-black text-5xl mb-6">gavel</span>
+                            <div>
+                                <h3 className="font-anton text-3xl text-black mb-4 uppercase">Legal Cross-Ref</h3>
+                                <p className="font-satoshi text-black/80 text-base md:text-lg">Validates clauses against current Indian case law, the Indian Contract Act (1872), and recent Supreme Court judgments.</p>
+                            </div>
+                        </div>
+                        {/* Jurisprudence Engine */}
+                        <div className="lg:col-span-2 bg-[#f8f9fa] p-8 md:p-10 flex flex-col justify-between min-h-[400px] feature-card">
+                            <div>
+                                <h3 className="font-anton text-3xl md:text-4xl text-[#0e1510] mb-4 uppercase">Jurisprudence Engine</h3>
+                                <p className="font-satoshi text-base md:text-lg text-[#0e1510]/70 max-w-md">Our proprietary model scans against Supreme Court precedents to ensure your terms are enforceable in current courts.</p>
+                            </div>
+                            <div className="mt-8 relative h-48 bg-white border border-black/10 p-4 shadow-xl overflow-hidden rounded-sm">
+                                <div className="flex gap-2 mb-4">
+                                    <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                                    <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                                    <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                                </div>
+                                <div className="grid grid-cols-4 gap-4">
+                                    <div className="col-span-1 space-y-2">
+                                        <div className="h-3 w-full bg-gray-100"></div>
+                                        <div className="h-3 w-3/4 bg-gray-100"></div>
+                                        <div className="h-3 w-1/2 bg-primary-fixed"></div>
+                                    </div>
+                                    <div className="col-span-2 border-l border-gray-100 pl-4">
+                                        <div className="h-32 w-full bg-gray-50 flex items-center justify-center relative">
+                                            <div className="p-2 border border-primary-fixed bg-white font-satoshi text-[10px] text-black shadow-sm">
+                                                RISK DETECTED: CLAUSE 4.2
+                                            </div>
+                                            <span className="material-symbols-outlined absolute top-1/2 left-1/2 text-black text-lg pointer-events-none" style={{ transform: "translate(-50%, -50%)" }}>near_me</span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 h-1 mt-2">
+                                            <div className="bg-primary-fixed h-full" style={{ width: "65%" }}></div>
+                                        </div>
+                                    </div>
+                                    <div className="col-span-1 space-y-4">
+                                        <div className="w-10 h-10 bg-[#FFE17C]"></div>
+                                        <div className="space-y-1">
+                                            <div className="h-2 w-full bg-gray-200"></div>
+                                            <div className="h-2 w-full bg-gray-200"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* How It Works Section */}
+                <section className="max-w-[1440px] mx-auto py-24 px-8 flex flex-col lg:flex-row gap-20 how-it-works-section" id="how-it-works">
+                    <div className="lg:w-1/3 step-item">
+                        <div className="lg:sticky lg:top-32">
+                            <h2 className="font-anton text-6xl md:text-7xl lg:text-8xl uppercase">Legal Intelligence Flow</h2>
+                            <p className="font-satoshi text-lg md:text-xl text-on-surface-variant mt-8 uppercase tracking-widest font-bold">Streamline your contract review process in three simple, automated steps.</p>
+                        </div>
+                    </div>
+                    <div className="lg:w-2/3 space-y-24 md:space-y-[500px] mt-12 lg:mt-0">
+                        <div className="relative group step-item">
+                            <span className="font-anton text-8xl md:text-9xl absolute -top-12 md:-top-16 -left-4 md:-left-8 opacity-10 transition-opacity group-hover:opacity-20 pointer-events-none">01</span>
+                            <div className="relative z-10 pl-6 md:pl-0">
+                                <h4 className="font-anton text-3xl md:text-4xl mb-4 uppercase text-primary-fixed">Upload Contract</h4>
+                                <p className="font-satoshi text-lg md:text-xl text-on-surface-variant leading-relaxed">Securely drag and drop your PDF file. We support English and Hindi legal documents.</p>
+                            </div>
+                        </div>
+                        <div className="relative group step-item">
+                            <span className="font-anton text-8xl md:text-9xl absolute -top-12 md:-top-16 -left-4 md:-left-8 opacity-10 transition-opacity group-hover:opacity-20 pointer-events-none">02</span>
+                            <div className="relative z-10 pl-6 md:pl-0">
+                                <h4 className="font-anton text-3xl md:text-4xl mb-4 uppercase text-primary-fixed">AI Analysis</h4>
+                                <p className="font-satoshi text-lg md:text-xl text-on-surface-variant leading-relaxed">Our agents parse, interpret, and risk-score every clause against 50+ customizable legal parameters.</p>
+                            </div>
+                        </div>
+                        <div className="relative group step-item">
+                            <span className="font-anton text-8xl md:text-9xl absolute -top-12 md:-top-16 -left-4 md:-left-8 opacity-10 transition-opacity group-hover:opacity-20 pointer-events-none">03</span>
+                            <div className="relative z-10 pl-6 md:pl-0">
+                                <h4 className="font-anton text-3xl md:text-4xl mb-4 uppercase text-primary-fixed">Risk Score &amp; Report</h4>
+                                <p className="font-satoshi text-lg md:text-xl text-on-surface-variant leading-relaxed">Receive a downloadable report with a risk heatmap and suggested redlines ready for negotiation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Final CTA */}
+                <section className="bg-primary-fixed py-24 md:py-32 px-8 relative overflow-hidden cta-section" id="pricing">
+                    <div className="font-anton text-[12rem] md:text-[20rem] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black/5 pointer-events-none uppercase whitespace-nowrap">SECURE</div>
+                    <div className="max-w-[1440px] mx-auto text-center relative z-10 cta-content">
+                        <h2 className="font-anton text-5xl md:text-7xl lg:text-9xl uppercase leading-[0.9] text-[#231b00] mb-8">Secure your legal agreements</h2>
+                        <p className="font-satoshi text-lg md:text-2xl text-black/70 mb-12 max-w-2xl mx-auto uppercase font-bold tracking-tight">Join forward-thinking legal teams using NyayaAI to reduce contract review time by 80%.</p>
+                        <div className="max-w-md mx-auto bg-[#161d18] p-8">
+                            <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); /* optional email signup logic */ }}>
+                                <div className="text-left">
+                                    <label className="font-anton text-xs text-primary-fixed mb-2 block uppercase">Business Email</label>
+                                    <input className="w-full bg-surface-container-highest border-b-2 border-primary-fixed/30 focus:border-primary-fixed focus:ring-0 text-white p-4 font-satoshi outline-none transition-colors duration-300" placeholder="you@company.com" type="email" />
+                                </div>
+                                <button type="submit" className="w-full bg-primary-fixed text-on-primary-fixed py-6 font-anton text-2xl hover:bg-white transition-all duration-300">
+                                    GET ACCESS
+                                </button>
+                                <p className="font-satoshi text-xs text-white/40 mt-4 uppercase font-bold">No credit card required · 14-day free trial</p>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            {/* Footer */}
+            <footer className="bg-[#161d18] w-full border-t border-[#b7c6c210]">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-12 px-8 py-20 max-w-[1440px] mx-auto">
+                    <div className="md:col-span-2">
+                        <div className="font-anton text-3xl text-[#ffe17c] mb-6">NYAYAI</div>
+                        <p className="font-satoshi text-sm opacity-60 text-white max-w-xs mb-8">Autonomous legal intelligence for the modern Indian enterprise.</p>
+                        <div className="flex gap-6">
+                            <span className="material-symbols-outlined text-white/40 hover:text-[#ffe17c] cursor-pointer transition-colors">public</span>
+                            <span className="material-symbols-outlined text-white/40 hover:text-[#ffe17c] cursor-pointer transition-colors">terminal</span>
+                            <span className="material-symbols-outlined text-white/40 hover:text-[#ffe17c] cursor-pointer transition-colors">shield</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 className="font-anton uppercase text-xl text-[#ffe17c] mb-6">PRODUCT</h5>
+                        <ul className="space-y-4">
+                            <li><a className="font-satoshi text-sm text-white/40 hover:text-[#ffe17c] transition-colors hover:translate-x-1 inline-block duration-200" href="#features">FEATURES</a></li>
+                            <li><a className="font-satoshi text-sm text-white/40 hover:text-[#ffe17c] transition-colors hover:translate-x-1 inline-block duration-200" href="#pricing">PRICING</a></li>
+                            <li><a className="font-satoshi text-sm text-white/40 hover:text-[#ffe17c] transition-colors hover:translate-x-1 inline-block duration-200" href="#">API</a></li>
+                        </ul>
+                        <h5 className="font-anton uppercase text-xl text-[#ffe17c] mt-12 mb-6">COMPANY</h5>
+                        <ul className="space-y-4">
+                            <li><a className="font-satoshi text-sm text-white/40 hover:text-[#ffe17c] transition-colors hover:translate-x-1 inline-block duration-200" href="#">ABOUT US</a></li>
+                            <li><a className="font-satoshi text-sm text-white/40 hover:text-[#ffe17c] transition-colors hover:translate-x-1 inline-block duration-200" href="#">CONTACT</a></li>
+                            <li><a className="font-satoshi text-sm text-white/40 hover:text-[#ffe17c] transition-colors hover:translate-x-1 inline-block duration-200" href="#">PRIVACY</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 className="font-anton uppercase text-xl text-[#ffe17c] mb-6">RESOURCES</h5>
+                        <ul className="space-y-4">
+                            <li><a className="font-satoshi text-sm text-white/40 hover:text-[#ffe17c] transition-colors hover:translate-x-1 inline-block duration-200 uppercase" href="#">Blog</a></li>
+                            <li><a className="font-satoshi text-sm text-white/40 hover:text-[#ffe17c] transition-colors hover:translate-x-1 inline-block duration-200 uppercase" href="#">Legal Playbooks</a></li>
+                            <li><a className="font-satoshi text-sm text-white/40 hover:text-[#ffe17c] transition-colors hover:translate-x-1 inline-block duration-200 uppercase" href="#">Case Studies</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div className="px-8 py-10 max-w-[1440px] mx-auto border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <p className="font-satoshi text-xs opacity-40 text-white">© 2026 NYAYAI TECHNOLOGIES PVT LTD. PRECISION BRUTALISM APPLIED.</p>
+                    <div className="flex gap-8">
+                        <a className="font-satoshi text-xs opacity-40 text-white hover:opacity-100 transition-opacity" href="#">TERMS</a>
+                        <a className="font-satoshi text-xs opacity-40 text-white hover:opacity-100 transition-opacity" href="#">PRIVACY</a>
+                        <a className="font-satoshi text-xs opacity-40 text-white hover:opacity-100 transition-opacity" href="#">COOKIES</a>
+                    </div>
+                </div>
+            </footer>
+
+            {/* Auth Dialog */}
+            <AuthDialog
+                open={authDialogOpen}
+                onOpenChange={setAuthDialogOpen}
+                onSuccess={handleAuthSuccess}
+            />
         </div>
     );
 }
