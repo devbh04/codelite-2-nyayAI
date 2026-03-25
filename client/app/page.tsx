@@ -267,8 +267,8 @@ export default function LandingPage() {
                             <span className="w-2 h-2 rounded-full bg-primary-fixed animate-pulse"></span>
                             <span className="font-satoshi text-xs font-bold tracking-widest uppercase">Supports latest Indian Laws</span>
                         </div>
-                        <h1 className="font-anton text-8xl md:text-9xl uppercase leading-[0.9] tracking-tighter mb-12 max-w-5xl">
-                            Your Autonomous Legal <span className="skew-highlight text-neutral-300 stroke-text">Red-Flag Agent</span>
+                        <h1 className="font-anton text-6xl md:text-9xl uppercase leading-[0.9] tracking-tighter mb-12 max-w-5xl">
+                            Your Autonomous Legal <span className="block md:inline skew-highlight text-neutral-300 stroke-text">Red-Flag Agent</span>
                         </h1>
                         <p className="font-satoshi text-xl md:text-2xl text-on-surface-variant max-w-3xl mb-12">
                             Instant risk assessment and redlining based on Indian Contract Act &amp; Corporate Law. Simply upload your contract and let our multi-agent AI secure your interests.
