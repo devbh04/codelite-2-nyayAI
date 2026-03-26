@@ -4,10 +4,10 @@ set -e
 # Get the directory where this script lives (repo root)
 DIR="$(cd "$(dirname "$0")" && pwd)"
 
-echo "Starting LiveKit voice agent in background..."
-cd "$DIR/livekit-voice-agent"
-python agent.py start &
-AGENT_PID=$!
+# echo "Starting LiveKit voice agent in background..."
+# cd "$DIR/livekit-voice-agent"
+# python agent.py start &
+# AGENT_PID=$!
 
 echo "Starting FastAPI server on port ${PORT:-8001}..."
 cd "$DIR/server"
